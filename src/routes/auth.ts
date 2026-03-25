@@ -26,12 +26,12 @@ export async function authRoutes(app: FastifyInstance) {
   await browserProxyRoutes(app);
 
   /**
-   * POST /auth/restore - Restore session from cookies
+   * POST /restore - Restore session from cookies
    *
    * Alternative auth method: User exports cookies from their browser
    * and sends them to create a session directly.
    */
-  app.post('/auth/restore', async (request, reply) => {
+  app.post('/restore', async (request, reply) => {
     const schema = z.object({
       userId: z.string().min(1),
       cookies: z.array(z.object({
@@ -104,9 +104,9 @@ export async function authRoutes(app: FastifyInstance) {
   });
 
   /**
-   * DELETE /auth/session/:sessionId - End a session
+   * DELETE /session/:sessionId - End a session
    */
-  app.delete('/auth/session/:sessionId', async (request, reply) => {
+  app.delete('/session/:sessionId', async (request, reply) => {
     const { sessionId } = request.params as { sessionId: string };
 
     const session = sessionStore.getSession(sessionId);
