@@ -24,6 +24,8 @@ const PUBLIC_ENDPOINTS = [
   '/ui/',
   '/docs',
   '/docs/',
+  '/auth/login',      // Helper page for users
+  '/auth/login/',
 ];
 
 // Master admin key for initial setup (from environment variable)
@@ -31,9 +33,9 @@ const MASTER_ADMIN_KEY = process.env.MASTER_ADMIN_KEY || null;
 
 // Endpoints that require specific permissions
 const PERMISSION_MAP: Record<string, string> = {
-  'POST /auth/browser': 'auth',
-  'POST /auth/login': 'auth',
   'POST /auth/restore': 'auth',
+  'GET /auth/session': 'auth',
+  'DELETE /auth/session': 'auth',
 
   'GET /data/profile': 'read',
   'GET /data/courses': 'read',
