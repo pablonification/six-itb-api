@@ -51,7 +51,7 @@ export async function browserProxyRoutes(app: FastifyInstance) {
    * POST /auth/browser - Start login session
    * Returns a URL the user can visit to login
    */
-  app.post('/auth/browser', async (request, reply) => {
+  app.post('/browser', async (request, reply) => {
     const schema = z.object({
       userId: z.string().min(1),
       callbackUrl: z.string().url().optional(),
@@ -138,7 +138,7 @@ export async function browserProxyRoutes(app: FastifyInstance) {
    * GET /auth/browser/:loginId - Browser login page
    * Serves an HTML page with remote browser view
    */
-  app.get('/auth/browser/:loginId', async (request, reply) => {
+  app.get('/browser/:loginId', async (request, reply) => {
     const { loginId } = request.params as { loginId: string };
     const loginSession = loginSessions.get(loginId);
 
@@ -390,7 +390,7 @@ export async function browserProxyRoutes(app: FastifyInstance) {
   /**
    * GET /auth/browser/:loginId/status - Check login status
    */
-  app.get('/auth/browser/:loginId/status', async (request, reply) => {
+  app.get('/browser/:loginId/status', async (request, reply) => {
     const { loginId } = request.params as { loginId: string };
     const loginSession = loginSessions.get(loginId);
 
@@ -412,7 +412,7 @@ export async function browserProxyRoutes(app: FastifyInstance) {
   /**
    * GET /auth/browser/:loginId/screenshot - Get browser screenshot
    */
-  app.get('/auth/browser/:loginId/screenshot', async (request, reply) => {
+  app.get('/browser/:loginId/screenshot', async (request, reply) => {
     const { loginId } = request.params as { loginId: string };
     const loginSession = loginSessions.get(loginId);
 
@@ -431,7 +431,7 @@ export async function browserProxyRoutes(app: FastifyInstance) {
   /**
    * POST /auth/browser/:loginId/click - Click at coordinates
    */
-  app.post('/auth/browser/:loginId/click', async (request, reply) => {
+  app.post('/browser/:loginId/click', async (request, reply) => {
     const { loginId } = request.params as { loginId: string };
     const loginSession = loginSessions.get(loginId);
 
@@ -452,7 +452,7 @@ export async function browserProxyRoutes(app: FastifyInstance) {
   /**
    * POST /auth/browser/:loginId/type - Type text
    */
-  app.post('/auth/browser/:loginId/type', async (request, reply) => {
+  app.post('/browser/:loginId/type', async (request, reply) => {
     const { loginId } = request.params as { loginId: string };
     const loginSession = loginSessions.get(loginId);
 
@@ -473,7 +473,7 @@ export async function browserProxyRoutes(app: FastifyInstance) {
   /**
    * GET /auth/session/:sessionId - Get session status
    */
-  app.get('/auth/session/:sessionId', async (request, reply) => {
+  app.get('/session/:sessionId', async (request, reply) => {
     const { sessionId } = request.params as { sessionId: string };
     const session = sessionStore.getSession(sessionId);
 
