@@ -5,6 +5,7 @@
 import Fastify from 'fastify';
 import cors from '@fastify/cors';
 import websocket from '@fastify/websocket';
+import WebSocket from 'ws';
 import { authRoutes } from './routes/auth.js';
 import { dataRoutes } from './routes/data.js';
 import { presenceRoutes } from './routes/presence.js';
@@ -131,8 +132,9 @@ export async function createServer() {
 
   // WebSocket route for real-time updates
   fastify.register(async function (fastify) {
-    fastify.get('/ws', { websocket: true }, (connection, req) => {
-      const socket = connection.socket;
+    fastify.get('/ws', { websocket: true }, (connection: WebSocket, req) => {
+      // In @fastify/websocket, connection is the WebSocket itself
+      const socket = connection;
       wsClients.add(socket);
 
       fastify.log.info('WebSocket client connected');
