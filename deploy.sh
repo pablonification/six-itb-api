@@ -20,7 +20,7 @@ if ! command -v docker &> /dev/null; then
 fi
 
 # Check if Docker Compose is installed
-if ! command -v docker-compose &> /dev/null && ! docker compose version &> /dev/null; then
+if ! docker compose version &> /dev/null; then
     echo -e "${RED}Docker Compose is not installed.${NC}"
     exit 1
 fi
@@ -39,11 +39,11 @@ mkdir -p data
 # Build and start
 echo ""
 echo "📦 Building Docker image..."
-docker-compose build
+docker compose build
 
 echo ""
 echo "🚀 Starting services..."
-docker-compose up -d
+docker compose up -d
 
 echo ""
 echo "⏳ Waiting for service to be ready..."
@@ -66,11 +66,11 @@ if [ -n "$HEALTH" ]; then
     echo "🔑 Master Admin Key: $MASTER_ADMIN_KEY"
     echo ""
     echo "📝 Useful commands:"
-    echo "   View logs: docker-compose logs -f"
-    echo "   Stop: docker-compose down"
-    echo "   Restart: docker-compose restart"
+    echo "   View logs: docker compose logs -f"
+    echo "   Stop: docker compose down"
+    echo "   Restart: docker compose restart"
 else
     echo -e "${RED}❌ Service failed to start. Check logs:${NC}"
-    docker-compose logs
+    docker compose logs
     exit 1
 fi

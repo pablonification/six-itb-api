@@ -43,7 +43,7 @@ systemctl start docker
 systemctl enable docker
 
 # Install Docker Compose (if not included)
-apt install docker-compose -y
+apt install docker compose -y
 ```
 
 ### 2. Clone and Deploy
@@ -70,7 +70,7 @@ mkdir -p data
 
 # Set environment and start
 export MASTER_ADMIN_KEY=$(openssl rand -hex 32)
-docker-compose up -d --build
+docker compose up -d --build
 ```
 
 ### 3. Verify Deployment
@@ -83,14 +83,14 @@ docker ps
 curl http://localhost:3000/health
 
 # View logs
-docker-compose logs -f
+docker compose logs -f
 ```
 
 ## Configuration
 
 ### Environment Variables
 
-Create a `.env` file or set variables in `docker-compose.yml`:
+Create a `.env` file or set variables in `docker compose.yml`:
 
 | Variable | Description | Default |
 |----------|-------------|---------|
@@ -170,22 +170,22 @@ Certbot sets up automatic renewal via systemd timer.
 docker ps
 
 # View logs
-docker-compose logs -f
+docker compose logs -f
 
 # View last 100 lines
-docker-compose logs --tail=100
+docker compose logs --tail=100
 
 # Restart service
-docker-compose restart
+docker compose restart
 
 # Stop service
-docker-compose down
+docker compose down
 
 # Stop and remove volumes
-docker-compose down -v
+docker compose down -v
 
 # Rebuild and restart
-docker-compose up -d --build
+docker compose up -d --build
 
 # Execute command in container
 docker exec -it six-api sh
@@ -223,10 +223,10 @@ sqlite3 /app/data/api_keys.db
 git pull
 
 # Rebuild and restart
-docker-compose up -d --build
+docker compose up -d --build
 
 # Check logs
-docker-compose logs -f
+docker compose logs -f
 ```
 
 ## Troubleshooting
@@ -235,7 +235,7 @@ docker-compose logs -f
 
 ```bash
 # Check logs
-docker-compose logs
+docker compose logs
 
 # Check if port is in use
 lsof -i :3000
@@ -263,7 +263,7 @@ apt install -y libnss3 libnspr4 libatk1.0-0 libatk-bridge2.0-0 \
 # Check memory usage
 free -h
 
-# Increase Docker memory limit in docker-compose.yml
+# Increase Docker memory limit in docker compose.yml
 deploy:
   resources:
     limits:
@@ -274,7 +274,7 @@ deploy:
 
 ```bash
 # Stop service
-docker-compose down
+docker compose down
 
 # Check for lock files
 ls -la data/
@@ -283,7 +283,7 @@ ls -la data/
 rm data/*.db-wal data/*.db-shm 2>/dev/null
 
 # Restart
-docker-compose up -d
+docker compose up -d
 ```
 
 ## Scaling
@@ -335,6 +335,6 @@ openssl rand -hex 32
 ## Support
 
 For issues:
-- Check logs: `docker-compose logs -f`
+- Check logs: `docker compose logs -f`
 - Health check: `curl http://localhost:3000/health`
 - GitHub Issues: <your-repo-url>/issues
