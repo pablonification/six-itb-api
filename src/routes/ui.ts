@@ -365,11 +365,50 @@ function getDocsHTML(): string {
 
     <h2 id="auth-endpoints">Authentication Endpoints</h2>
 
+    <div class="note">
+      <div class="note-title">Server Deployment</div>
+      For VPS/server deployments, use <code>POST /auth/restore</code> with cookies exported from your browser.
+      The <code>/auth/browser</code> endpoint requires a display and is only for local development.
+    </div>
+
+    <div class="endpoint">
+      <span class="endpoint-method post">POST</span>
+      <span class="endpoint-path">/auth/restore</span>
+      <span class="tag tag-auth">auth</span>
+      <p class="endpoint-desc"><strong>RECOMMENDED for servers.</strong> Create session from browser cookies. User logs in on their own browser and exports cookies.</p>
+      <h3>How to get cookies:</h3>
+      <ol style="color: #94a3b8; margin: 10px 0; padding-left: 20px;">
+        <li>Login to <a href="https://six.itb.ac.id" style="color: #38bdf8;">six.itb.ac.id</a> on your browser</li>
+        <li>Open DevTools (F12) → Application → Cookies</li>
+        <li>Export cookies for <code>six.itb.ac.id</code> domain</li>
+        <li>Required cookies: <code>ASP.NET_SessionId</code>, <code>.ASPXAUTH</code></li>
+      </ol>
+      <div class="code-block"><code>curl -X POST https://api.example.com/auth/restore \\
+  -H "X-API-Key: sk_xxx" \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "userId": "user-123",
+    "cookies": [
+      {"name": "ASP.NET_SessionId", "value": "...", "domain": "six.itb.ac.id", "path": "/"},
+      {"name": ".ASPXAUTH", "value": "...", "domain": "six.itb.ac.id", "path": "/"}
+    ]
+  }'</code></div>
+      <div class="code-block"><code>// Response
+{
+  "success": true,
+  "data": {
+    "sessionId": "abc123...",
+    "expiresAt": "2026-03-25T22:00:00.000Z",
+    "message": "Session restored successfully. Use sessionId for data endpoints."
+  }
+}</code></div>
+    </div>
+
     <div class="endpoint">
       <span class="endpoint-method post">POST</span>
       <span class="endpoint-path">/auth/browser</span>
       <span class="tag tag-auth">auth</span>
-      <p class="endpoint-desc">Opens a browser for user to login via Microsoft 365 SSO. Returns session ID after successful login.</p>
+      <p class="endpoint-desc"><strong>Local development only.</strong> Opens a browser for login. Not suitable for servers (requires display).</p>
       <div class="code-block"><code>curl -X POST https://api.example.com/auth/browser \\
   -H "X-API-Key: sk_xxx" \\
   -H "Content-Type: application/json" \\

@@ -349,6 +349,9 @@ export async function authRoutes(app: FastifyInstance) {
 
   /**
    * POST /auth/restore - Restore session from cookies
+   *
+   * This is the RECOMMENDED way to authenticate for server deployments.
+   * Users login on their own browser, export cookies, and send them here.
    */
   app.post('/restore', async (request, reply) => {
     const schema = z.object({
@@ -357,7 +360,7 @@ export async function authRoutes(app: FastifyInstance) {
         name: z.string(),
         value: z.string(),
         domain: z.string(),
-        path: z.string(),
+        path: z.string().default('/'),
         expires: z.number().optional(),
         httpOnly: z.boolean().optional(),
         secure: z.boolean().optional(),
@@ -368,11 +371,19 @@ export async function authRoutes(app: FastifyInstance) {
     if (!body.success) {
       return reply.status(400).send({
         success: false,
-        error: { code: 'INVALID_INPUT', message: 'userId and cookies are required' },
+        error: { code: 'INVALID_INPUT', message: 'userId and cookies are required. Cookie format: {name, value, domain, path}' },
       });
     }
 
     const { userId, cookies } = body.data;
+
+    // Minimum cookies check
+    if (cookies.length === 0) {
+      return reply.status(400).send({
+        success: false,
+        error: { code: 'INVALID_INPUT', message: 'At least one cookie is required' },
+      });
+    }
 
     try {
       // Create context with provided cookies to validate
@@ -389,7 +400,7 @@ export async function authRoutes(app: FastifyInstance) {
       if (!isValid) {
         return reply.status(401).send({
           success: false,
-          error: { code: 'INVALID_COOKIES', message: 'Provided cookies are invalid or expired' },
+          error: { code: 'INVALID_COOKIES', message: 'Provided cookies are invalid or expired. Please login again and export fresh cookies.' },
         });
       }
 
@@ -401,6 +412,7 @@ export async function authRoutes(app: FastifyInstance) {
         data: {
           sessionId: session.id,
           expiresAt: session.expiresAt,
+          message: 'Session restored successfully. Use sessionId for data endpoints.',
         },
       };
     } catch (error) {
