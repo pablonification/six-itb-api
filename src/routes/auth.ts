@@ -145,8 +145,50 @@ export async function authRoutes(app: FastifyInstance) {
 
     const { userId } = body.data;
 
+    // Check if running in headless environment
+    const headless = process.env.BROWSER_HEADLESS !== 'false';
+
+    // HEADLESS MODE: Return WebSocket endpoint for remote connection
+    if (headless) {
+      const browserServer = await chromium.launchServer({
+        headless: true,
+        port: 9222,
+        args: ['--no-sandbox', '--disable-setuid-sandbox'],
+      });
+
+      const wsEndpoint = browserServer.wsEndpoint();
+
+      // Create a connected context to navigate to login page
+      const browser = await chromium.connect(wsEndpoint);
+      const context = await browser.newContext({ viewport: null });
+      const page = await context.newPage();
+      await page.goto(SIX_MS365_LOGIN);
+
+      return reply.status(200).send({
+        success: true,
+        data: {
+          sessionId: null,
+          status: 'waiting_for_login',
+          message: 'Browser launched in headless mode. Connect via WebSocket to complete login.',
+          wsEndpoint,
+          connectCommand: `const browser = await chromium.connect('${wsEndpoint}');`,
+          instructions: [
+            '1. Connect to the browser using Playwright:',
+            `   const browser = await chromium.connect('${wsEndpoint}');`,
+            '   const page = browser.contexts()[0].pages()[0];',
+            '',
+            '2. Complete login in the browser page',
+            '',
+            '3. After login, cookies are automatically captured',
+            '',
+            'Note: Browser will auto-close after 5 minutes of inactivity',
+          ],
+        },
+      });
+    }
+
+    // HEADED MODE (local development): Launch visible browser
     try {
-      // Launch visible browser for user to login
       const browser = await chromium.launch({
         headless: false,
         args: ['--start-maximized'],
