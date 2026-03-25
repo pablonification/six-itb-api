@@ -39,8 +39,8 @@ export class BrowserPool {
     // Start cleanup interval (every 5 minutes)
     this.cleanupInterval = setInterval(() => this.cleanup(), 5 * 60 * 1000);
 
-    // Pre-warm one browser
-    await this.getOrCreateBrowser();
+    // Don't pre-warm browser - create on demand
+    // This prevents crashes if Playwright isn't installed yet
   }
 
   /**
