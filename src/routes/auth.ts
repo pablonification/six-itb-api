@@ -1,12 +1,5 @@
 /**
- * Authentication Routes - OAuth-like flow for SIX ITB
- *
- * Flow:
- * 1. Client calls POST /auth/browser to get a login URL
- * 2. User opens login URL in their browser (any device)
- * 3. User logs in with Microsoft 365
- * 4. API captures the session automatically
- * 5. Client polls GET /auth/session/:sessionId to check status
+ * Authentication Routes
  */
 
 import { FastifyInstance } from 'fastify';
@@ -14,7 +7,7 @@ import { z } from 'zod';
 import { getBrowserPool } from '../services/browser-pool.js';
 import { getSessionStore } from '../services/session-store.js';
 import { checkSessionValid, detectCurrentSemester } from '../services/six-scraper.js';
-import { browserProxyRoutes } from '../services/browser-proxy.js';
+import { simpleAuthRoutes } from '../services/simple-auth.js';
 
 const SIX_LOGIN_URL = 'https://six.itb.ac.id';
 
@@ -22,14 +15,11 @@ export async function authRoutes(app: FastifyInstance) {
   const browserPool = getBrowserPool();
   const sessionStore = getSessionStore();
 
-  // Register browser proxy routes (handles /auth/browser, /auth/browser/:loginId/*)
-  await browserProxyRoutes(app);
+  // Register simple auth routes (handles /browser, /browser/:id/status, /session/:id)
+  await simpleAuthRoutes(app);
 
   /**
    * POST /restore - Restore session from cookies
-   *
-   * Alternative auth method: User exports cookies from their browser
-   * and sends them to create a session directly.
    */
   app.post('/restore', async (request, reply) => {
     const schema = z.object({
@@ -49,7 +39,7 @@ export async function authRoutes(app: FastifyInstance) {
     if (!body.success) {
       return reply.status(400).send({
         success: false,
-        error: { code: 'INVALID_INPUT', message: 'userId and cookies are required. Cookie format: {name, value, domain, path}' },
+        error: { code: 'INVALID_INPUT', message: 'userId and cookies are required' },
       });
     }
 
@@ -63,11 +53,9 @@ export async function authRoutes(app: FastifyInstance) {
     }
 
     try {
-      // Create context with provided cookies to validate
       const context = await browserPool.createContext(`validate_${userId}`, cookies);
       const page = await context.newPage();
 
-      // Navigate to validate session
       await page.goto(SIX_LOGIN_URL, { waitUntil: 'networkidle' });
 
       const isValid = await checkSessionValid(page);
@@ -77,11 +65,10 @@ export async function authRoutes(app: FastifyInstance) {
       if (!isValid) {
         return reply.status(401).send({
           success: false,
-          error: { code: 'INVALID_COOKIES', message: 'Provided cookies are invalid or expired. Please login again and export fresh cookies.' },
+          error: { code: 'INVALID_COOKIES', message: 'Cookies are invalid or expired' },
         });
       }
 
-      // Create new session
       const session = sessionStore.createSession(userId, cookies, 60);
 
       return {
@@ -89,7 +76,7 @@ export async function authRoutes(app: FastifyInstance) {
         data: {
           sessionId: session.id,
           expiresAt: session.expiresAt,
-          message: 'Session restored successfully. Use sessionId for data endpoints.',
+          message: 'Session restored successfully',
         },
       };
     } catch (error) {
@@ -101,25 +88,5 @@ export async function authRoutes(app: FastifyInstance) {
         },
       });
     }
-  });
-
-  /**
-   * DELETE /session/:sessionId - End a session
-   */
-  app.delete('/session/:sessionId', async (request, reply) => {
-    const { sessionId } = request.params as { sessionId: string };
-
-    const session = sessionStore.getSession(sessionId);
-    if (!session) {
-      return reply.status(404).send({
-        success: false,
-        error: { code: 'NOT_FOUND', message: 'Session not found' },
-      });
-    }
-
-    sessionStore.deleteSession(sessionId);
-    await browserPool.closeContext(sessionId);
-
-    return { success: true, message: 'Session ended' };
   });
 }
